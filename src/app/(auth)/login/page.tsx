@@ -1,10 +1,65 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unescaped-entities */
+'use client'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from "react"
+import { baseUrl } from "@/apiConfigs/urlConfigs"
 
 export default function LoginPage() {
+  const [formData, setFormData] = useState({
+    email: 'satis@gmail.com',
+    password: '1234',
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [responseMsg, setResponseMsg] = useState('');
+
+
+  
+
+  const handleChange = (e:any) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e:any) => {
+    e.preventDefault();
+    setLoading(true);
+    setResponseMsg('');
+
+    try {
+      const res = await fetch(`${baseUrl}/user/login`, {
+        method: 'POST',
+         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setResponseMsg('✅ Logged in  successful!');
+        setFormData({ email: '', password: '' });
+        // navigate("/")
+
+      } else {
+        setResponseMsg(data.message || '⚠️ Something went wrong.');
+      }
+    } catch (error) {
+      console.log(error);
+      setResponseMsg('❌ Network error or server issue.');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex h-16 items-center justify-between border-b px-4 lg:px-6">
@@ -61,11 +116,12 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="mt-10 mx-auto w-full max-w-sm">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <Label htmlFor="email">Email address</Label>
               <div className="mt-2">
-                <Input id="email" name="email" type="email" autoComplete="email" required />
+                <Input id="email" name="email" type="email" autoComplete="email" required    value={formData.email}
+            onChange={handleChange}/>
               </div>
             </div>
             <div>
@@ -78,13 +134,13 @@ export default function LoginPage() {
                 </div>
               </div>
               <div className="mt-2">
-                <Input id="password" name="password" type="password" autoComplete="current-password" required />
+                <Input id="password" name="password" type="password" autoComplete="current-password" required    value={formData.password}
+            onChange={handleChange}/>
               </div>
             </div>
             <div>
-              <Link href="/dashboard">
-                <Button className="w-full">Sign in</Button>
-              </Link>
+             
+                <Button className="w-full"    disabled={loading}>  {loading ? 'logging...' : 'Login'}</Button>
             </div>
           </form>
         </div>

@@ -1,13 +1,12 @@
 import Dashboard from '@/components/custom-ui/dashboard'
 import React from 'react'
 
-const DashboardPage = () => {
+const page = () => {
   return (
-    <>
-    <Dashboard/>
-      
-    </>
+    <div>
+       <Dashboard/>
+    </div>
   )
 }
 
-export default DashboardPage
+export default page
