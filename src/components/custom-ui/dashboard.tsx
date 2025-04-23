@@ -11,6 +11,7 @@ import RenameModal from '@/components/custom-ui/rename-modal';
 import UploadModal from '@/components/custom-ui/upload-modal';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 export default function Dashboard() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -24,6 +25,9 @@ export default function Dashboard() {
   const [deleteType, setDeleteType] = useState<string>('');
   const [renameType, setRenameType] = useState<string>('');
   const [progress, setProgress] = useState(0);
+  const [userDetails, setUserDetails] = useState({ name: '', email: '' });
+
+  const [loading, setLoading] = useState(true);
 
   const { dirId } = useParams();
   console.log(dirId);
@@ -45,7 +49,6 @@ export default function Dashboard() {
 
   // Rename
   const handleRename = async (newName: any) => {
-
     if (renameType === 'file') {
       const response = await fetch(`${baseUrl}/file/${selectedItem.id}`, {
         method: 'PATCH',
@@ -71,7 +74,6 @@ export default function Dashboard() {
 
   // Delete file
   const handleDelete = async () => {
-
     if (deleteType === 'file') {
       const deleteFileResponse = await fetch(
         `${baseUrl}/file/${selectedItem.id}`,
@@ -93,11 +95,11 @@ export default function Dashboard() {
     setIsDeleteModalOpen(false);
   };
 
-    // Upload file
-    const handleUpload = (files: any) => {
-        setIsUploadModalOpen(false);
-        uploadFile(files);
-      };
+  // Upload file
+  const handleUpload = (files: any) => {
+    setIsUploadModalOpen(false);
+    uploadFile(files);
+  };
 
   //   Upload file
   const uploadFile = (fileList: FileList) => {
@@ -118,47 +120,90 @@ export default function Dashboard() {
     xhr.send(file);
   };
 
-
-
   async function getDirectoryFiles() {
-    const files = await fetch(`${baseUrl}/directory/${dirId || ''}`, {
-      credentials: 'include',
-    });
-    const data = await files.json();
-    setFileListData(data.files);
-    setDirectoriesData(data.directories);
+    try {
+      // setLoading(true);
+      const files = await fetch(`${baseUrl}/directory/${dirId || ''}`, {
+        credentials: 'include',
+      });
+      const data = await files.json();
+      setFileListData(data.files);
+      setDirectoriesData(data.directories);
+      
+    } catch (error) {
+      setLoading(false);
+      
+    }finally{
+      setLoading(false);
+    }
+ 
   }
 
   useEffect(() => {
     getDirectoryFiles();
   }, [dirId]);
 
+  const getUserDetails = async () => {
+    const response = await fetch(`${baseUrl}/user`, {
+      credentials: 'include',
+    });
+    const data = await response.json();
+    console.log(response);
+    if (response.ok) {
+      setUserDetails({
+        name: data.name,
+        email: data.email,
+      });
+    }
+  };
+
+  useEffect(() => {
+    getUserDetails();
+  }, []);
+
+  // Skeleton loading component
+  const SkeletonRow = () => (
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-9" />
+      <Skeleton className="h-9" />
+      <Skeleton className="h-9" />
+      <Skeleton className="h-9" />
+      <Skeleton className="h-9" />
+    </div>
+  );
+
   return (
     <div className="min-h-screen  flex flex-col max-w-7xl mx-auto">
       <Header
-        user={{
-          name: 'John Doe',
-          email: 'john@example.com',
-        }}
+        user={userDetails}
+        isAccess={!userDetails.name && !userDetails.email}
       />
 
       <main className="flex-1 container mx-auto p-4">
-        <FileExplorer
-          onUpload={() => setIsUploadModalOpen(true)}
-          onCreateFolder={() => setIsCreateFolderModalOpen(true)}
-          onRename={(item, type) => {
-            setSelectedItem(item);
-            setIsRenameModalOpen(true);
-            setRenameType(type);
-          }}
-          onDelete={(item, type) => {
-            setSelectedItem(item);
-            setIsDeleteModalOpen(true);
-            setDeleteType(type);
-          }}
-          fileListData={fileListData}
-          directoriesData={directoriesData}
-        />
+        {
+          loading  ? <SkeletonRow/> : (
+
+            <FileExplorer
+            onUpload={() => setIsUploadModalOpen(true)}
+            onCreateFolder={() => setIsCreateFolderModalOpen(true)}
+            onRename={(item, type) => {
+              setSelectedItem(item);
+              setIsRenameModalOpen(true);
+              setRenameType(type);
+            }}
+            onDelete={(item, type) => {
+              setSelectedItem(item);
+              setIsDeleteModalOpen(true);
+              setDeleteType(type);
+            }}
+            fileListData={fileListData}
+            directoriesData={directoriesData}
+            isAccess={!userDetails.name && !userDetails.email}
+          />
+
+          )
+        }
+     
       </main>
 
       <UploadModal

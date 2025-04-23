@@ -32,6 +32,7 @@ interface FileExplorerProps {
   onDelete: (item: any, type: string) => void;
   fileListData?: any;
   directoriesData?: any;
+  isAccess?:boolean
 }
 
 export default function FileExplorer({
@@ -41,6 +42,7 @@ export default function FileExplorer({
   onDelete,
   fileListData,
   directoriesData,
+  isAccess
 }: FileExplorerProps) {
   console.log(directoriesData)
   // Get icon based on file type
@@ -83,15 +85,17 @@ export default function FileExplorer({
 
   // }
 
+  
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex space-x-2">
-          <Button size="sm" onClick={onUpload}>
+          <Button size="sm" onClick={onUpload} disabled={isAccess}>
             <Upload className="h-4 w-4 mr-2" />
             Upload
           </Button>
-          <Button size="sm" variant="outline" onClick={onCreateFolder}>
+          <Button size="sm" variant="outline" onClick={onCreateFolder} disabled={isAccess}>
             <FolderPlus className="h-4 w-4 mr-2" />
             New Folder
           </Button>
@@ -101,7 +105,7 @@ export default function FileExplorer({
       <Card>
         <CardContent className="p-0">
           <div className="divide-y">
-            {fileListData.map((item: any) => (
+            {fileListData?.map((item: any) => (
               <div
             
                 key={item.id}
@@ -143,7 +147,7 @@ export default function FileExplorer({
                 </div>
               </div>
             ))}
-            {directoriesData.map((item: any) => (
+            {directoriesData?.map((item: any) => (
               <div
              
                 key={item.id}
@@ -179,11 +183,16 @@ export default function FileExplorer({
               </div>
             ))}
 
-            {/* {fileListData.length === 0 && (
+            {isAccess && (
               <div className="p-8 text-center text-slate-500">
-                This folder is empty
+                You don&apos;t have  Permisson.Please Login first <Link className='text-indigo-600' href={"/login"}>Here</Link>
               </div>
-            )} */}
+            )}
+            {directoriesData?.length === 0 && fileListData?.length===0  && (
+              <div className="p-8 text-center text-slate-500">
+                No files and folder found
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

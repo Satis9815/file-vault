@@ -1,7 +1,7 @@
-"use client"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+'use client';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,21 +9,34 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { FolderIcon, LogOut, Settings, User } from "lucide-react"
+} from '@/components/ui/dropdown-menu';
+import { FolderIcon, LogOut, Settings, User } from 'lucide-react';
+import { baseUrl } from '@/apiConfigs/urlConfigs';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   user: {
-    name: string
-    email: string
-  }
+    name: string;
+    email: string;
+  };
+  isAccess?:boolean;
 }
 
-export default function Header({ user }: HeaderProps) {
-  const handleLogout = () => {
-    console.log("Logging out")
-    window.location.href = "/"
-  }
+export default function Header({ user ,isAccess}: HeaderProps) {
+  const navigate = useRouter();
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/user/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        navigate.push('/login');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <header className="bg-white border-b sticky top-0 z-10">
@@ -35,13 +48,13 @@ export default function Header({ user }: HeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled={isAccess}>
               <Avatar>
                 <AvatarFallback className="bg-slate-200 text-slate-700">
                   {user.name
-                    .split(" ")
+                    .split(' ')
                     .map((n) => n[0])
-                    .join("")}
+                    .join('')}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -50,7 +63,9 @@ export default function Header({ user }: HeaderProps) {
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.email}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -71,5 +86,5 @@ export default function Header({ user }: HeaderProps) {
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }

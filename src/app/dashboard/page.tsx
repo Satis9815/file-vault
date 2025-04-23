@@ -1,10 +1,12 @@
 import Dashboard from '@/components/custom-ui/dashboard'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 const DashboardPage = () => {
   return (
     <>
-    <Dashboard/>
+    <Suspense fallback={<div>Loading</div>}>
+      <Dashboard/>
+    </Suspense>
       
     </>
   )

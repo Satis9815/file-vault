@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { baseUrl } from "@/apiConfigs/urlConfigs"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -15,9 +17,8 @@ export default function LoginPage() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMsg, setResponseMsg] = useState('');
 
-
+const navigate =  useRouter();
   
 
   const handleChange = (e:any) => {
@@ -31,7 +32,6 @@ export default function LoginPage() {
   const handleSubmit = async (e:any) => {
     e.preventDefault();
     setLoading(true);
-    setResponseMsg('');
 
     try {
       const res = await fetch(`${baseUrl}/user/login`, {
@@ -43,19 +43,21 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
 
       if (res.ok) {
-        setResponseMsg('✅ Logged in  successful!');
+        // setResponseMsg('✅ Logged in  successful!');
+        toast.success("Logged in  successful!")
+        
         setFormData({ email: '', password: '' });
-        // navigate("/")
+        
+        navigate.push("/dashboard")
 
       } else {
-        setResponseMsg(data.message || '⚠️ Something went wrong.');
+        toast.error("⚠️ Something went wrong.")
       }
     } catch (error) {
       console.log(error);
-      setResponseMsg('❌ Network error or server issue.');
+      toast.error("Network error or server issue.")
     } finally {
       setLoading(false);
     }
